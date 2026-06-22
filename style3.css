@@ -6,7 +6,9 @@
 body {
   margin: 0;
   padding: 0;
-  background: #020000;
+  /* L'image cottage.jpeg est maintenant ici pour couvrir tout l'écran */
+  background: radial-gradient(circle at center, rgba(20, 5, 5, 0.5) 0%, rgba(5, 0, 0, 0.85) 70%, #020000 100%), 
+              url('cottage.jpeg') center/cover no-repeat fixed;
   color: #fff;
   font-family: 'Inter', sans-serif;
   overflow: hidden;
@@ -65,8 +67,17 @@ h1 {
   text-shadow: 0 0 10px rgba(255, 0, 0, 0.7);
 }
 
-.topbar p { margin: 4px 0 0; color: #777; font-size: 11px; text-transform: uppercase; }
-.stats { display: flex; gap: 12px; }
+.topbar p { 
+  margin: 4px 0 0; 
+  color: #777; 
+  font-size: 11px; 
+  text-transform: uppercase; 
+}
+
+.stats { 
+  display: flex; 
+  gap: 12px; 
+}
 
 .stat-card {
   min-width: 115px;
@@ -131,6 +142,7 @@ h1 {
   border-radius: 3px;
   overflow: hidden;
 }
+
 #dangerFill {
   height: 100%;
   width: 0%;
@@ -139,26 +151,30 @@ h1 {
   transition: width 0.3s ease;
 }
 
-/* --- ZONE DE SCÈNE --- */
+/* --- ZONE DE SCÈNE (ZONE DE CLICK) --- */
 .scene {
   position: relative;
   flex: 1;
   border-radius: 16px;
   overflow: hidden;
-  background: radial-gradient(circle at center, #140505 0%, #050000 50%, #000000 100%);
-  border: 1px solid rgba(255, 0, 0, 0.1);
+  /* Fond noir semi-transparent pour laisser deviner la cabane derrière sans gêner le gameplay */
+  background: rgba(5, 1, 1, 0.65);
+  border: 1px solid rgba(255, 0, 0, 0.15);
   cursor: none !important;
 }
 
 .vignette {
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at center, transparent 20%, rgba(0,0,0,0.9) 90%);
+  background: radial-gradient(circle at center, transparent 20%, rgba(0,0,0,0.85) 90%);
   pointer-events: none;
   z-index: 10;
 }
 
-.scene.danger { animation: cameraShake 0.1s infinite; border-color: rgba(255,0,0,0.5); }
+.scene.danger { 
+  animation: cameraShake 0.1s infinite; 
+  border-color: rgba(255,0,0,0.5); 
+}
 
 /* --- ÉVÉNEMENT : ÉTATS DE SCÈNE --- */
 .scene.blackout {
@@ -187,7 +203,9 @@ h1 {
   opacity: 0;
   pointer-events: none !important; 
 }
-.scene:hover .flashlight { opacity: 1; }
+.scene:hover .flashlight { 
+  opacity: 1; 
+}
 
 /* --- INDICATEURS DE DANGER DIRECTIONNELS --- */
 .dmg-indicator {
@@ -202,7 +220,7 @@ h1 {
 .dmg-bottom-left { bottom: 0; left: 0; width: 250px; height: 250px; background: radial-gradient(circle at bottom left, rgba(255,0,0,0.4) 0%, transparent 70%); }
 .dmg-bottom-right { bottom: 0; right: 0; width: 250px; height: 250px; background: radial-gradient(circle at bottom right, rgba(255,0,0,0.4) 0%, transparent 70%); }
 
-/* --- MONSTRES (PÉRIPHÉRIE ET RAPPROCHEMENT) --- */
+/* --- MONSTRES --- */
 .monster-track {
   position: absolute;
   width: 130px;
@@ -214,9 +232,9 @@ h1 {
   justify-content: center;
   opacity: 0;
   filter: drop-shadow(0 0 20px rgba(255, 0, 0, 0.4));
-  /* Transition fluide lors du rapprochement calculé par JS */
   transition: top 0.2s ease-out, left 0.2s ease-out, right 0.2s ease-out, bottom 0.2s ease-out, opacity 0.2s ease-out;
 }
+
 .monster-visual {
   width: 100%;
   height: 100%;
@@ -235,8 +253,12 @@ h1 {
   box-shadow: inset 0 0 30px rgba(255,255,255,0.7), 0 0 25px rgba(0,0,0,0.9) !important;
 }
 
-/* Suppression des configurations statiques '0px' pour permettre le positionnement dynamique par script */
-.mirage-track { top: 10px; left: 45%; pointer-events: auto !important; cursor: pointer; }
+.mirage-track { 
+  top: 10px; 
+  left: 45%; 
+  pointer-events: auto !important; 
+  cursor: pointer; 
+}
 
 /* --- STRUCTURE DU MONSTRE PRINCIPAL --- */
 #monster {
@@ -293,9 +315,8 @@ h1 {
   cursor: pointer;
   animation: pulseBtn 0.8s infinite alternate;
 }
-@keyframes pulseBtn { from { transform: translate(-50%, -50%) scale(0.95); } to { transform: translate(-50%, -50%) scale(1.05); } }
 
-/* FX DE FLASH */
+/* FX DE FLASH & BARRIER */
 .light-flash {
   position: absolute;
   left: 50%;
@@ -309,7 +330,9 @@ h1 {
   z-index: 9;
   pointer-events: none;
 }
-.light-flash.active { animation: flashWave 0.25s cubic-bezier(0.075, 0.82, 0.165, 1); }
+.light-flash.active { 
+  animation: flashWave 0.25s cubic-bezier(0.075, 0.82, 0.165, 1); 
+}
 
 .barrier {
   position: absolute;
@@ -380,7 +403,16 @@ h1 {
   20%, 24%, 55% { border-color: rgba(255, 59, 48, 0.4); }
 }
 
-#message { text-align: center; color: #ff3b30; font-size: 12px; font-weight: 900; margin: 4px 0 0; text-transform: uppercase; letter-spacing: 1px; height: 15px;}
+#message { 
+  text-align: center; 
+  color: #ff3b30; 
+  font-size: 12px; 
+  font-weight: 900; 
+  margin: 4px 0 0; 
+  text-transform: uppercase; 
+  letter-spacing: 1px; 
+  height: 15px;
+}
 
 /* --- ÉCRANS ABSOLUS DE DÉMARRAGE --- */
 .start-screen, .big-message {
@@ -420,7 +452,7 @@ h1 {
   width: 100%;
 }
 
-#nextBtn, #startBtn, #restartBtn {
+#restartBtn {
   padding: 16px 40px;
   background: transparent;
   border: 2px solid #ff3b30;
@@ -433,7 +465,7 @@ h1 {
   border-radius: 6px;
   transition: all 0.3s ease;
 }
-#nextBtn:hover, #startBtn:hover, #restartBtn:hover { 
+#restartBtn:hover { 
   background: #ff3b30; 
   color: #000; 
   box-shadow: 0 0 25px #ff3b30;
@@ -527,6 +559,7 @@ h1 {
   font-weight: bold;
   animation: pulseBtn 0.5s infinite alternate;
 }
+@keyframes pulseBtn { from { transform: translate(-50%, -50%) scale(0.95); } to { transform: translate(-50%, -50%) scale(1.05); } }
 
 /* --- BOUTIQUE DE PRESTIGE --- */
 .prestige-box {
@@ -606,6 +639,7 @@ h1 {
 .prestige-btn:disabled span {
   color: #888888;
 }
+
 /* AFFICHAGE DES BONUS PERMANENTS GAGNÉS EN HAUT DE L'ÉCRAN */
 .permanent-bonus-display {
   margin-top: 8px;
@@ -662,6 +696,7 @@ h1 {
   50% { opacity: 0.9; transform: translate(-50%, -50%) scale(1.1); }
   100% { opacity: 0.0; transform: translate(-50%, -50%) scale(0.9); }
 }
+
 /* Disposition en deux colonnes pour l'histoire */
 .step-layout {
   display: flex;
@@ -738,8 +773,9 @@ h1 {
     flex-direction: column;
   }
 }
+
 /* DESIGN DES BOUTONS DE L'ÉCRAN D'ACCUEIL (RÉALIGNÉS AVEC LE THÈME) */
-#nextBtn, #goToReadyBtn, #startBtn {
+#nextBtn, #goToReadyBtn {
   background: rgba(255, 0, 0, 0.05);
   color: #ff3333;
   border: 1px solid #ff3333;
@@ -758,16 +794,16 @@ h1 {
 }
 
 /* EFFET COMPORTEMENT AU SURVOL */
-#nextBtn:hover, #goToReadyBtn:hover, #startBtn:hover {
+#nextBtn:hover, #goToReadyBtn:hover {
   background: #ff3333;
-  color: #000; /* Le texte devient noir sur fond rouge néon */
+  color: #000; 
   box-shadow: 0 0 25px #ff3333, 0 0 50px rgba(255, 0, 0, 0.5);
   transform: translateY(-2px);
   text-shadow: none;
 }
 
 /* EFFET QUAND ON CLIQUE */
-#nextBtn:active, #goToReadyBtn:active, #startBtn:active {
+#nextBtn:active, #goToReadyBtn:active {
   transform: translateY(1px);
   box-shadow: 0 0 15px #ff3333;
 }
