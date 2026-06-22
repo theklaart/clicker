@@ -3,13 +3,16 @@ let score = 0;
 let danger = 0;
 let level = 1;
 
-let clickPower = 2;
-let dangerSpeed = 4.5;
+const baseClickPower = 6;      
+let clickPower = baseClickPower;
+
+const baseDangerSpeed = 2.5;    
+let dangerSpeed = baseDangerSpeed;
 
 let powerPrice = 100;
-let ragePrice = 200;
-let barrierPrice = 400;
-let slowPrice = 550;
+let ragePrice = 250;
+let barrierPrice = 500;
+let slowPrice = 1200; 
 
 let barrierActive = false;
 let slowActive = false;
@@ -17,16 +20,18 @@ let gameOver = false;
 let gameStarted = false;
 
 let barrierTimer = null;
-let barrierDuration = 30;
+let barrierDuration = 20; 
 let barrierTimeLeft = 0;
 
-// Système de sauvegarde locale (Sauvegarde des fragments / Prestige)
+// Variables pour le système de Surchauffe
+let clickTimes = [];
+let isOverheated = false;
+let overheatTimeout = null;
+
+// Système de sauvegarde locale (Prestige)
 let totalFragments = parseInt(localStorage.getItem("totalFragments")) || 0;
 let permanentPowerBonus = parseInt(localStorage.getItem("permanentPowerBonus")) || 0;
 let permanentDefenseBonus = parseInt(localStorage.getItem("permanentDefenseBonus")) || 0;
-
-// Application immédiate des bonus permanents achetés au prestige
-clickPower += permanentPowerBonus;
 
 // --- SÉLECTEURS DU DOM ---
 const scoreText = document.getElementById("score");
@@ -37,8 +42,14 @@ const scene = document.getElementById("scene");
 const message = document.getElementById("message");
 const barrier = document.getElementById("barrier");
 const flashlight = document.getElementById("flashlight");
+const bloodScreen = document.getElementById("bloodScreen");
+const overheatAlert = document.getElementById("overheatAlert");
 
-// Écrans d'introduction & Boutons
+// Éléments des bonus en haut de l'écran
+const bonusPowerVal = document.getElementById("bonusPowerVal");
+const bonusDefenseVal = document.getElementById("bonusDefenseVal");
+
+// Écrans d'accueil
 const startScreen = document.getElementById("startScreen");
 const storyBox = document.getElementById("storyBox");
 const readyBox = document.getElementById("readyBox");
@@ -46,7 +57,7 @@ const nextBtn = document.getElementById("nextBtn");
 const startBtn = document.getElementById("startBtn");
 const countdownText = document.getElementById("countdown");
 
-// Écran Game Over & Boutique Prestige
+// Game Over & Prestige
 const bigMessage = document.getElementById("bigMessage");
 const restartBtn = document.getElementById("restartBtn");
 const fragmentsGainedText = document.getElementById("fragmentsGained");
@@ -54,48 +65,85 @@ const totalFragmentsText = document.getElementById("totalFragments");
 const upPermanentPowerBtn = document.getElementById("upPermanentPower");
 const upPermanentDefenseBtn = document.getElementById("upPermanentDefense");
 
-// Boutique Standard (In-Game)
+// Boutique Standard
 const powerBtn = document.getElementById("powerBtn");
 const rageBtn = document.getElementById("rageBtn");
 const barrierBtn = document.getElementById("barrierBtn");
 const slowBtn = document.getElementById("slowBtn");
 
-// Fichiers Audio
+// Sons
 const readySound = document.getElementById("readySound");
 const closingSound = document.getElementById("closingSound");
 const screamSound = document.getElementById("screamSound");
 const clickSound = document.getElementById("clickSound");
 
-// --- INTERFACE DE DÉMARRAGE ET CINÉMATIQUE ---
+const monsterTracks = {
+  mt1: document.querySelector(".mt1"),
+  mt2: document.querySelector(".mt2"),
+  mt3: document.querySelector(".mt3"),
+  mt4: document.querySelector(".mt4"),
+  mt5: document.querySelector(".mt5"),
+  mt6: document.querySelector(".mt6")
+};
 
-// Étape 1 : Passage du pitch de l'histoire à l'avertissement
+function initShopPrices() {
+  if (powerBtn) powerBtn.querySelector("span").textContent = powerPrice;
+  if (rageBtn) rageBtn.querySelector("span").textContent = ragePrice;
+  if (barrierBtn) barrierBtn.querySelector("span").textContent = barrierPrice;
+  if (slowBtn) slowBtn.querySelector("span").textContent = slowPrice;
+}
+
+// Fonction pour mettre à jour l'affichage des bonus permanents en haut
+function updatePermanentBonusDisplay() {
+  if (bonusPowerVal) bonusPowerVal.textContent = permanentPowerBonus;
+  if (bonusDefenseVal) bonusDefenseVal.textContent = permanentDefenseBonus * 5;
+}
+
+// --- NOUVEAUX SÉLECTEURS POUR LA TRANSITION ---
+const prestigeGuideBox = document.getElementById("prestigeGuideBox");
+const goToReadyBtn = document.getElementById("goToReadyBtn");
+
 if (nextBtn) {
-  nextBtn.addEventListener("click", function() {
-    if (clickSound) { clickSound.currentTime = 0; clickSound.play().catch(() => {}); }
-    storyBox.classList.add("hidden");
-    readyBox.classList.remove("hidden");
-    if (readySound) readySound.play().catch(() => {});
+  nextBtn.addEventListener("click", function(e) {
+    if (e) e.preventDefault();
+    if (clickSound) { try { clickSound.currentTime = 0; clickSound.play().catch(() => {}); } catch(err){} }
+    
+    // On cache l'histoire, on montre le guide des bonus
+    if (storyBox) storyBox.classList.add("hidden");
+    if (prestigeGuideBox) prestigeGuideBox.classList.remove("hidden");
   });
 }
 
-// Étape 2 : Clic sur SURVIVRE -> Compte à rebours immersif
+if (goToReadyBtn) {
+  goToReadyBtn.addEventListener("click", function(e) {
+    if (e) e.preventDefault();
+    if (clickSound) { try { clickSound.currentTime = 0; clickSound.play().catch(() => {}); } catch(err){} }
+    
+    // On cache le guide, on montre le compte à rebours
+    if (prestigeGuideBox) prestigeGuideBox.classList.add("hidden");
+    if (readyBox) readyBox.classList.remove("hidden");
+    if (readySound) { try { readySound.play().catch(() => {}); } catch(err){} }
+  });
+}
+
 if (startBtn) {
-  startBtn.addEventListener("click", function() {
-    if (clickSound) { clickSound.currentTime = 0; clickSound.play().catch(() => {}); }
-    startBtn.classList.add("hidden"); // Cache le bouton pour éviter le double-clic
+  startBtn.addEventListener("click", function(e) {
+    if (e) e.preventDefault();
+    if (clickSound) { try { clickSound.currentTime = 0; clickSound.play().catch(() => {}); } catch(err){} }
+    startBtn.classList.add("hidden");
     
     let count = 3;
-    countdownText.textContent = count;
+    if (countdownText) countdownText.textContent = count;
     
     let interval = setInterval(function() {
       count--;
       if (count > 0) {
-        countdownText.textContent = count;
+        if (countdownText) countdownText.textContent = count;
       } else if (count === 0) {
-        countdownText.textContent = "PROTÈGE-LA !";
+        if (countdownText) countdownText.textContent = "PROTÈGE-LA !";
       } else {
         clearInterval(interval);
-        startScreen.classList.add("hidden");
+        if (startScreen) startScreen.classList.add("hidden");
         initGame();
       }
     }, 1000);
@@ -109,28 +157,46 @@ function initGame() {
   danger = 0;
   score = 0;
   level = 1;
+  clickTimes = [];
+  isOverheated = false;
+  if (overheatAlert) overheatAlert.classList.add("hidden");
+  if (flashlight) flashlight.classList.remove("lamp-overheat-flicker");
   
+  powerPrice = 100;
+  ragePrice = 250;
+  barrierPrice = 500;
+  slowPrice = 1200;
+  initShopPrices();
+  updatePermanentBonusDisplay();
+  
+  barrierActive = false;
+  slowActive = false;
+  if (barrier) barrier.classList.add("hidden");
+  
+  clickPower = baseClickPower + permanentPowerBonus;
+  dangerSpeed = baseDangerSpeed; 
+
   if (closingSound) {
-    closingSound.currentTime = 0;
-    closingSound.play().catch(() => {});
+    try { closingSound.currentTime = 0; closingSound.play().catch(() => {}); } catch(err){}
   }
   
-  // Boucle de rafraîchissement du danger (Toutes les secondes)
   let gameLoop = setInterval(function() {
     if (gameOver || !gameStarted) {
       clearInterval(gameLoop);
       return;
     }
     
-    // Calcul de la réduction de danger grâce à la recherche de défense de prestige (+5% par niveau)
     let defenseFactor = 1 - (permanentDefenseBonus * 0.05);
-    if (defenseFactor < 0.2) defenseFactor = 0.2; // Limite de sécurité (cap à 80% max de réduction)
+    if (defenseFactor < 0.2) defenseFactor = 0.2; 
     
-    // Si le bouclier (Lumière Sacrée) est actif, la montée du danger est divisée par 10
     let currentSpeed = barrierActive ? (dangerSpeed * 0.1) : dangerSpeed;
     
+    // Si la lampe surchauffe, le danger augmente deux fois plus vite pendant le bug !
+    if (isOverheated) {
+      currentSpeed *= 2;
+    }
+    
     danger += (currentSpeed * defenseFactor);
-    score += level; // Le score augmente passivement selon le niveau actuel
     
     if (danger >= 100) {
       danger = 100;
@@ -138,14 +204,13 @@ function initGame() {
     }
     
     updateUI();
-  }, 1000);
+  }, 100);
 }
 
-// --- LOGIQUE DE LA LAMPE TORCHE ET CLICS SUR LA SCÈNE ---
-if (scene && flashlight) {
-  // Suivi ultra-fluide du curseur (optimisé via la suppression des transitions globales en CSS)
+// --- CLIC SUR LA SCÈNE ET VÉRIFICATION DE LA SURCHAUFFE ---
+if (scene) {
   scene.addEventListener("mousemove", function(e) {
-    if (!gameStarted || gameOver) return;
+    if (!gameStarted || gameOver || !flashlight) return;
     const rect = scene.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
@@ -153,82 +218,128 @@ if (scene && flashlight) {
     flashlight.style.top = y + "px";
   });
   
-  // Clic sur la scène pour faire reculer la jauge de danger
-  scene.addEventListener("click", function() {
+  scene.addEventListener("click", function(e) {
     if (!gameStarted || gameOver) return;
-    if (clickSound) {
-      clickSound.currentTime = 0;
-      clickSound.play().catch(() => {});
+    if (e) e.preventDefault(); 
+
+    // --- LOGIQUE DE DÉTECTION DE SURCHAUFFE ---
+    const now = Date.now();
+    clickTimes.push(now);
+    // On ne garde que les clics des 1.5 dernières secondes
+    clickTimes = clickTimes.filter(time => now - time < 1500);
+
+    // Si le joueur clique plus de 13 fois en 1.5s (vitesse de clic anormale / spam extrême)
+    if (clickTimes.length > 13 && !isOverheated) {
+      isOverheated = true;
+      if (overheatAlert) overheatAlert.classList.remove("hidden");
+      if (flashlight) flashlight.classList.add("lamp-overheat-flicker");
+
+      // Le système se réinitialise après 3.5 secondes de dysfonctionnement
+      overheatTimeout = setTimeout(() => {
+        isOverheated = false;
+        if (overheatAlert) overheatAlert.classList.add("hidden");
+        if (flashlight) flashlight.classList.remove("lamp-overheat-flicker");
+        clickTimes = [];
+      }, 3500);
     }
     
-    danger -= clickPower;
+    if (clickSound) {
+      try { clickSound.currentTime = 0; clickSound.play().catch(() => {}); } catch(err){}
+    }
+    
+    // Si la lampe est en surchauffe, le clic perd toute son efficacité (force = 1) !
+    let currentClickPower = isOverheated ? 1 : clickPower;
+    
+    danger -= currentClickPower;
     if (danger < 0) danger = 0;
+    
+    score += 10;
+    
+    if (message) {
+      if (isOverheated) {
+        message.innerHTML = `<span style="color: #ff3b30;">PRODUIT DÉFECTUEUX - PUISSANCE MINIMALE (1)</span>`;
+      } else {
+        message.textContent = `+10 Points ! Force de repoussement : ${currentClickPower}`;
+      }
+    }
     updateUI();
   });
 }
 
-// --- REFRESH DE L'INTERFACE DYNAMIQUE ---
+// --- MISE À JOUR DES MONSTRES ET DES NIVEAUX ---
 function updateUI() {
   if (scoreText) scoreText.textContent = Math.floor(score);
   if (dangerText) dangerText.textContent = Math.floor(danger) + "%";
   if (levelText) levelText.textContent = level;
   if (dangerFill) dangerFill.style.width = danger + "%";
   
-  // Changement de niveau automatique tous les 150 points de score (Max niveau 10)
-  let targetLevel = Math.floor(score / 150) + 1;
+  if (bloodScreen) {
+    if (danger >= 75 && gameStarted && !gameOver) {
+      bloodScreen.classList.add("critical-flicker");
+    } else {
+      bloodScreen.classList.remove("critical-flicker");
+      bloodScreen.style.opacity = danger / 100;
+    }
+  }
+
+  let pct = danger / 100; 
+  let distance = pct * 40; 
+
+  if (monsterTracks.mt1) { monsterTracks.mt1.style.top = distance + "%"; monsterTracks.mt1.style.left = distance + "%"; monsterTracks.mt1.style.opacity = pct > 0.05 ? 1 : pct * 20; }
+  if (monsterTracks.mt2) { monsterTracks.mt2.style.top = distance + "%"; monsterTracks.mt2.style.right = distance + "%"; monsterTracks.mt2.style.opacity = pct > 0.05 ? 1 : pct * 20; }
+  if (monsterTracks.mt3) { monsterTracks.mt3.style.bottom = distance + "%"; monsterTracks.mt3.style.left = distance + "%"; monsterTracks.mt3.style.opacity = pct > 0.05 ? 1 : pct * 20; }
+  if (monsterTracks.mt4) { monsterTracks.mt4.style.bottom = distance + "%"; monsterTracks.mt4.style.right = distance + "%"; monsterTracks.mt4.style.opacity = pct > 0.05 ? 1 : pct * 20; }
+  if (monsterTracks.mt5) { monsterTracks.mt5.style.top = "42%"; monsterTracks.mt5.style.left = distance + "%"; monsterTracks.mt5.style.opacity = pct > 0.05 ? 1 : pct * 20; }
+  if (monsterTracks.mt6) { monsterTracks.mt6.style.top = "42%"; monsterTracks.mt6.style.right = distance + "%"; monsterTracks.mt6.style.opacity = pct > 0.05 ? 1 : pct * 20; }
+  
+  let targetLevel = Math.floor(score / 250) + 1;
   if (targetLevel > level && level < 10) {
     level = targetLevel;
-    dangerSpeed += 1.5; // Accélération de la difficulté
-    if (message) message.textContent = "NIVEAU " + level + " : L'obscurité s'épaissit !";
+    dangerSpeed += 0.9; 
+    
+    let attackPower = 15 + (level * 6); 
+    danger += attackPower;
+    if (danger > 100) danger = 100;
+
+    if (message) {
+      message.innerHTML = `⚠️ <span style="color: #ff0000;">NIVEAU ${level} ! VAGUE D'OMBRE (+${attackPower}% Danger)</span>`;
+    }
   }
   
-  // Gestion d'activation/désactivation visuelle (Néons cassés ou allumés) des boutons du shop standard
   if (powerBtn) powerBtn.disabled = (score < powerPrice);
   if (rageBtn) rageBtn.disabled = (score < ragePrice);
   if (barrierBtn) barrierBtn.disabled = (score < barrierPrice || barrierActive);
   if (slowBtn) slowBtn.disabled = (score < slowPrice || slowActive);
 }
 
-// --- MAGASIN STANDARD (EN JEU) ---
-
-// 1. Projecteur Halogène (Amélioration du clic de base)
+// --- MAGASIN EN JEU ---
 if (powerBtn) {
   powerBtn.addEventListener("click", function(e) {
-    e.stopPropagation(); // Évite que le clic déclenche aussi l'attaque sur la scène
+    e.stopPropagation();
     if (score >= powerPrice) {
       score -= powerPrice;
-      clickPower += 3;
-      powerPrice = Math.floor(powerPrice * 1.5);
-      
-      const priceSpan = powerBtn.querySelector("span");
-      if (priceSpan) priceSpan.textContent = powerPrice;
-      
-      if (message) message.textContent = "Projecteur amélioré ! Puissance de frappe : " + clickPower;
+      clickPower += 5; 
+      powerPrice = Math.floor(powerPrice * 1.6);
+      powerBtn.querySelector("span").textContent = powerPrice;
       updateUI();
     }
   });
 }
 
-// 2. Flash Magnésium (Réduction instantanée massive du danger)
 if (rageBtn) {
   rageBtn.addEventListener("click", function(e) {
     e.stopPropagation();
     if (score >= ragePrice) {
       score -= ragePrice;
-      danger -= 35;
+      danger -= 45; 
       if (danger < 0) danger = 0;
-      ragePrice = Math.floor(ragePrice * 1.4);
-      
-      const priceSpan = rageBtn.querySelector("span");
-      if (priceSpan) priceSpan.textContent = ragePrice;
-      
-      if (message) message.textContent = "Flash aveuglant activé ! Le danger recule.";
+      ragePrice = Math.floor(ragePrice * 1.5);
+      rageBtn.querySelector("span").textContent = ragePrice;
       updateUI();
     }
   });
 }
 
-// 3. Lumière Sacrée (Bouclier temporaire de protection)
 if (barrierBtn) {
   barrierBtn.addEventListener("click", function(e) {
     e.stopPropagation();
@@ -237,22 +348,17 @@ if (barrierBtn) {
       barrierActive = true;
       barrierTimeLeft = barrierDuration;
       if (barrier) barrier.classList.remove("hidden");
-      if (message) message.textContent = "Lumière Sacrée activée (Protection 30s) !";
       
       barrierTimer = setInterval(function() {
         barrierTimeLeft--;
-        const priceSpan = barrierBtn.querySelector("span");
-        if (priceSpan) priceSpan.textContent = barrierTimeLeft + "s";
+        if (barrierBtn.querySelector("span")) barrierBtn.querySelector("span").textContent = barrierTimeLeft + "s";
         
         if (barrierTimeLeft <= 0) {
           clearInterval(barrierTimer);
           barrierActive = false;
           if (barrier) barrier.classList.add("hidden");
-          barrierPrice = Math.floor(barrierPrice * 1.6);
-          
-          // Réinitialise le texte propre du bouton avec le nouveau coût calculé
+          barrierPrice = Math.floor(barrierPrice * 1.7);
           barrierBtn.innerHTML = `Lumière Sacrée <br><span>${barrierPrice}</span>`;
-          if (message) message.textContent = "Le bouclier s'est dissipé...";
           updateUI();
         }
       }, 1000);
@@ -261,38 +367,33 @@ if (barrierBtn) {
   });
 }
 
-// 4. Figer le temps (Ralentissement permanent du palier de vitesse actuel)
 if (slowBtn) {
   slowBtn.addEventListener("click", function(e) {
     e.stopPropagation();
     if (score >= slowPrice && !slowActive) {
       score -= slowPrice;
       slowActive = true;
-      dangerSpeed = Math.max(1.5, dangerSpeed - 2.0); // Réduit la vitesse sans la faire tomber à 0 ou en négatif
-      
-      const priceSpan = slowBtn.querySelector("span");
-      if (priceSpan) priceSpan.textContent = "ACTIF";
-      
-      if (message) message.textContent = "Le temps est figé. Les monstres se déplacent au ralenti.";
+      dangerSpeed = Math.max(0.8, dangerSpeed - 1.5);
+      slowBtn.querySelector("span").textContent = "ACTIF";
       updateUI();
     }
   });
 }
 
-// --- SYSTÈME DE MORT ET DE PRESTIGE (FIN DE PARTIE) ---
+// --- GAME OVER & SHOP PRESTIGE ---
 function triggerGameOver() {
   gameOver = true;
   gameStarted = false;
+  clearTimeout(overheatTimeout);
   
-  if (closingSound) closingSound.pause();
-  if (screamSound) { screamSound.currentTime = 0; screamSound.play().catch(() => {}); }
+  if (bloodScreen) bloodScreen.classList.remove("critical-flicker");
+  if (closingSound) { try { closingSound.pause(); } catch(err){} }
+  if (screamSound) { try { screamSound.currentTime = 0; screamSound.play().catch(() => {}); } catch(err){} }
   
-  // Calcul et ajout des fragments de lumière (Prestige) obtenus durant la partie (1 fragment par tranche de 100 points)
   let fragmentsGained = Math.floor(score / 100);
   totalFragments += fragmentsGained;
   localStorage.setItem("totalFragments", totalFragments);
   
-  // Mise à jour des valeurs textuelles sur le panneau de Game Over
   if (fragmentsGainedText) fragmentsGainedText.textContent = fragmentsGained;
   if (totalFragmentsText) totalFragmentsText.textContent = totalFragments;
   
@@ -300,51 +401,54 @@ function triggerGameOver() {
   updatePrestigeShopButtons();
 }
 
-// Rafraîchit l'état des boutons de la boutique de Prestige
 function updatePrestigeShopButtons() {
   if (upPermanentPowerBtn) {
     upPermanentPowerBtn.disabled = (totalFragments < 5);
-    const textSpan = upPermanentPowerBtn.querySelector("span");
-    if (textSpan) textSpan.textContent = `Coût: 5 ✨ (Bonus : +${permanentPowerBonus})`;
+    upPermanentPowerBtn.querySelector("span").textContent = `Coût: 5 ✨ (Bonus : +${permanentPowerBonus})`;
   }
   if (upPermanentDefenseBtn) {
     upPermanentDefenseBtn.disabled = (totalFragments < 10);
-    const textSpan = upPermanentDefenseBtn.querySelector("span");
-    if (textSpan) textSpan.textContent = `Coût: 10 ✨ (Bonus : -${permanentDefenseBonus * 5}%)`;
+    upPermanentDefenseBtn.querySelector("span").textContent = `Coût: 10 ✨ (Bonus : -${permanentDefenseBonus * 5}%)`;
   }
 }
 
-// Achat d'un point d'attaque permanent (Coût: 5 fragments)
 if (upPermanentPowerBtn) {
-  upPermanentPowerBtn.addEventListener("click", function() {
+  upPermanentPowerBtn.addEventListener("click", function(e) {
+    if (e) e.stopPropagation();
     if (totalFragments >= 5) {
       totalFragments -= 5;
-      permanentPowerBonus += 1;
+      permanentPowerBonus += 3; 
       localStorage.setItem("totalFragments", totalFragments);
       localStorage.setItem("permanentPowerBonus", permanentPowerBonus);
       if (totalFragmentsText) totalFragmentsText.textContent = totalFragments;
       updatePrestigeShopButtons();
+      updatePermanentBonusDisplay();
     }
   });
 }
 
-// Achat d'une réduction permanente de danger (Coût: 10 fragments)
 if (upPermanentDefenseBtn) {
-  upPermanentDefenseBtn.addEventListener("click", function() {
+  upPermanentDefenseBtn.addEventListener("click", function(e) {
+    if (e) e.stopPropagation();
     if (totalFragments >= 10) {
       totalFragments -= 10;
-      permanentDefenseBonus += 1;
+      permanentDefenseBonus += 1; 
       localStorage.setItem("totalFragments", totalFragments);
       localStorage.setItem("permanentDefenseBonus", permanentDefenseBonus);
       if (totalFragmentsText) totalFragmentsText.textContent = totalFragments;
       updatePrestigeShopButtons();
+      updatePermanentBonusDisplay();
     }
   });
 }
 
-// Gestion du bouton Recommencer pour relancer une partie propre
 if (restartBtn) {
   restartBtn.addEventListener("click", function() {
-    location.reload();
+    if (bigMessage) bigMessage.classList.add("hidden");
+    initGame();
   });
 }
+
+// Chargement initial des interfaces au lancement de la page
+initShopPrices();
+updatePermanentBonusDisplay();

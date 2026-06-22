@@ -2,33 +2,56 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>PROTECT HER - Edition Cauchemar Absolu</title>
+  <title>PROTECT HER - Surchauffe & Prestige</title>
   <link rel="stylesheet" href="style3.css">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Inter:wght@400;700;900&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
 </head>
 <body>
 
+<!-- ÉCRAN D'ACCUEIL EN DEUX ÉTAPES -->
   <div class="start-screen" id="startScreen">
-    <div class="intro-container" id="storyBox">
-      <h2>JOUR 42</h2>
-      <p class="story-text">« Ils ont brisé les verrous du sous-sol... Je l'ai placée au centre de la pièce, sous l'unique projecteur. Les batteries faiblissent. Ne laisse pas les ombres toucher le cercle de lumière. S'ils l'atteignent... tout est fini. »</p>
-      <button id="nextBtn">REGARDER DANS L'OBSCURITÉ</button>
+    
+    <!-- ÉTAPE 1 : L'HISTOIRE & L'IMAGE -->
+    <div class="intro-container step-layout" id="storyBox">
+      <div class="intro-text-side">
+        <h2>L'HISTOIRE</h2>
+        <p class="story-text">
+          «Les créatures de l'ombre ont envahi la pièce. Au centre, une jeune fille sans défense. 
+          Votre unique arme est un vieux projecteur halogène connecté à vos clics. Si le danger atteint 100%, les ombres l'emportent. <br><br>
+          Chaque fois que vous échouez, votre score est converti en <strong>Fragments de Lumière (✨)</strong>. Utilisez-les judicieusement pour altérer définitivement la réalité.»
+        </p>
+        <button id="nextBtn">COMPRENDRE LES FRAGMENTS</button>
+      </div>
+      <div class="intro-image-side">
+        <img src="imageL.jpeg" alt="L'Ombre et la Fille" class="story-illustration">
+      </div>
     </div>
     
-    <div class="intro-container hidden" id="readyBox">
-      <h2>ILS SONT LÀ.</h2>
-      <div id="countdown">3</div>
-      <button id="startBtn">SURVIVRE</button>
-    </div>
-  </div>
+    <!-- ÉTAPE 2 : LE GUIDE DES FRAGMENTS (AÉRÉ) -->
+    <div class="intro-container hidden" id="prestigeGuideBox">
+      <h2>GUIDE DES BONUS DE LUMIÈRE (PRESTIGE)</h2>
+      <p style="color: #888; margin-bottom: 25px; font-size: 14px;">Ces compétences s'achètent après un Game Over et restent actives à l'infini.</p>
+      
+      <div class="prestige-explain-cards">
+        <div class="explain-card">
+          <h3>⚡ Puissance Clic</h3>
+          <p>Augmente la force de frappe brute de votre projecteur. Chaque amélioration ajoute <strong>+3 points</strong> de recul instantané à chaque clic. Indispensable pour survivre aux vagues supérieures.</p>
+        </div>
+        <div class="explain-card">
+          <h3>🛡️ Résistance Danger</h3>
+          <p>Génère un champ de protection passif. Chaque niveau acheté **ralentit de 5%** la progression naturelle des ombres. Permet de stabiliser le jeu et d'éviter les surchauffes inutiles.</p>
+        </div>
+      </div>
 
+      <button id="goToReadyBtn">REJOINDRE LE POSTE DE DÉFENSE</button>
+    </div>
+    
+
+  <!-- AUDIO -->
   <audio id="readySound" src="areyouready.mp3" preload="auto"></audio>
   <audio id="closingSound" src="closing.mp3" loop preload="auto"></audio>
-  <audio id="screamSound" src="crie.mp3" preload="auto"></audio>
+  <audio id="screamSound" src="crier.mp3" preload="auto"></audio>
   <audio id="clickSound" src="https://actions.google.com/sounds/v1/foley/metal_click.ogg" preload="auto"></audio>
-  <audio id="heartbeatSound" src="https://actions.google.com/sounds/v1/science_fiction/alien_creature_heartbeat.ogg" loop preload="auto"></audio>
-  <audio id="whisperSound" src="https://actions.google.com/sounds/v1/horrors/ghost_whisper.ogg" preload="auto"></audio>
-  <audio id="bossSound" src="https://actions.google.com/sounds/v1/ambient/dark_sci_fi_drone.ogg" loop preload="auto"></audio>
 
   <div class="app">
     <div class="blood-screen" id="bloodScreen"></div>
@@ -36,7 +59,12 @@
     <header class="topbar">
       <div class="brand">
         <h1>PROTECT HER</h1>
-        <p>Déplacez votre lampe torche et repoussez les ombres au centre.</p>
+        <!-- ZONE AFFICHAGE DES BONUS PERMANENTS GAGNÉS -->
+        <div class="permanent-bonus-display">
+          BONUS ACTIFS : 
+          <span class="bonus-tag">⚡ Clic: +<span id="bonusPowerVal">0</span></span>
+          <span class="bonus-tag">🛡️ Défense: -<span id="bonusDefenseVal">0</span>%</span>
+        </div>
       </div>
       <div class="stats">
         <div class="stat-card" id="scoreCard">Score <span id="score">0</span></div>
@@ -49,23 +77,12 @@
       <div id="dangerFill"></div>
     </div>
 
+    <!-- ZONE DE JEU -->
     <main class="scene" id="scene">
       <div class="vignette"></div>
-      
       <div class="flashlight" id="flashlight"></div>
 
-      <div class="boss-container hidden" id="bossContainer">
-        <div class="boss-hp-bar"><div id="bossHpFill"></div></div>
-        <div class="boss-visual" id="bossVisual"></div>
-      </div>
-
-      <div class="drop-item hidden" id="dropItem">⚡</div>
-
-      <div class="dmg-indicator dmg-top-left" id="dmg-mt1"></div>
-      <div class="dmg-indicator dmg-top-right" id="dmg-mt2"></div>
-      <div class="dmg-indicator dmg-bottom-left" id="dmg-mt3"></div>
-      <div class="dmg-indicator dmg-bottom-right" id="dmg-mt4"></div>
-
+      <!-- Monstres -->
       <div class="monster-track mt1"><div class="monster-visual"></div></div>
       <div class="monster-track mt2"><div class="monster-visual"></div></div>
       <div class="monster-track mt3"><div class="monster-visual"></div></div>
@@ -73,17 +90,16 @@
       <div class="monster-track mt5"><div class="monster-visual"></div></div>
       <div class="monster-track mt6"><div class="monster-visual"></div></div>
 
-      <div class="monster-track mirage-track hidden" id="mirageMonster">
-        <div class="monster-visual mirage-visual"></div>
-      </div>
-
       <div class="barrier hidden" id="barrier"></div>
-      <div class="light-flash" id="lightFlash"></div>
-      
       <div class="girl-photo" id="girlPhoto"></div>
 
-      <button id="generatorBtn" class="hidden">RALLUMER LE GÉNÉRATEUR !</button>
+      <!-- UI SURCHAUFFE (MESSAGE ERREUR CLIGNOTANT) -->
+      <div id="overheatAlert" class="overheat-alert hidden">
+        ⚠️ ERREUR : LAMPE EN SURCHAUFFE ! <br>
+        <span>Le système redémarre... Puissance réduite !</span>
+      </div>
 
+      <!-- ÉCRAN GAME OVER & BOUTIQUE PRESTIGE -->
       <div class="big-message hidden" id="bigMessage">
         <h2 class="glitch-text">GAME OVER</h2>
         <p>L'obscurité a refermé ses griffes sur elle.</p>
@@ -92,7 +108,7 @@
           <h3>fragments de lumière obtenus : <span id="fragmentsGained">0</span> ✨</h3>
           <p class="prestige-currency">Total en réserve : <span id="totalFragments">0</span> ✨</p>
           <div class="prestige-shop">
-            <button id="upPermanentPower" class="prestige-btn">⚡ Puissance Clic (+1) <br><span>Coût: 5 ✨</span></button>
+            <button id="upPermanentPower" class="prestige-btn">⚡ Puissance Clic (+3) <br><span>Coût: 5 ✨</span></button>
             <button id="upPermanentDefense" class="prestige-btn">🛡️ Résistance Danger (+5%) <br><span>Coût: 10 ✨</span></button>
           </div>
         </div>
@@ -101,12 +117,13 @@
       </div>
     </main>
 
+    <!-- BOUTIQUE STANDARD -->
     <section class="bottom-ui">
       <div class="shop" id="shop">
         <button id="powerBtn" class="neon-btn">Projecteur Halogène <br><span>100</span></button>
-        <button id="rageBtn" class="neon-btn">Flash Magnésium <br><span>200</span></button>
-        <button id="barrierBtn" class="neon-btn">Lumière Sacrée <br><span>400</span></button>
-        <button id="slowBtn" class="neon-btn">Figer le Temps <br><span>550</span></button>
+        <button id="rageBtn" class="neon-btn">Flash Magnésium <br><span>250</span></button>
+        <button id="barrierBtn" class="neon-btn">Lumière Sacrée <br><span>500</span></button>
+        <button id="slowBtn" class="neon-btn">Figer le Temps <br><span>1200</span></button>
       </div>
     </section>
 
