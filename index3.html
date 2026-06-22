@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Protect Her</title>
+  <link rel="stylesheet" href="style3.css">
+</head>
+
+<body>
+
+  <div class="start-screen" id="startScreen">
+    <h2>ES-TU PRÊT ?</h2>
+    <p>Ils s’approchent...</p>
+    <div id="countdown">3</div>
+    <button id="startBtn">COMMENCER</button>
+  </div>
+
+  <audio id="readySound" src="areyouready.mp3"></audio>
+  <audio id="closingSound" src="closing.mp3" loop></audio>
+  <audio id="screamSound" src="crier.mp3"></audio>
+
+  <div class="app">
+
+    <header class="topbar">
+      <div>
+        <h1>PROTECT HER</h1>
+        <p>Protège-la avant que les ombres arrivent.</p>
+      </div>
+
+      <div class="stats">
+        <div>Score <span id="score">0</span></div>
+        <div>Niveau <span id="level">1</span></div>
+        <div>Danger <span id="danger">0%</span></div>
+      </div>
+    </header>
+
+    <div class="danger-bar">
+      <div id="dangerFill"></div>
+    </div>
+
+    <main class="scene" id="scene">
+      <div class="monster monster1"></div>
+      <div class="monster monster2"></div>
+      <div class="monster monster3"></div>
+      <div class="monster monster4"></div>
+      <div class="monster monster5"></div>
+      <div class="monster monster6"></div>
+
+      <div class="barrier hidden" id="barrier"></div>
+      <div class="rage" id="rage"></div>
+      <div class="girl-photo"></div>
+
+      <div class="big-message hidden" id="bigMessage">
+        <h2 id="bigTitle">GAME OVER</h2>
+        <p id="bigText">Tu n’as pas assez amélioré ta protection.</p>
+        <button onclick="location.reload()">RECOMMENCER</button>
+      </div>
+    </main>
+
+    <section class="bottom-ui">
+      <button id="protectBtn" class="protect-btn">PROTÉGER</button>
+
+      <div class="shop">
+        <button id="powerBtn">Clic violent <span id="powerPrice">200</span></button>
+        <button id="rageBtn">Explosion rouge <span id="ragePrice">300</span></button>
+        <button id="barrierBtn">Cercle de sang <span id="barrierPrice">400</span></button>
+        <button id="slowBtn">Ralentir l’ombre <span id="slowPrice">550</span></button>
+      </div>
+    </section>
+
+    <p id="message"></p>
+  </div>
+
+  <script src="script1.js"></script>
+</body>
+</html>

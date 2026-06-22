@@ -1,0 +1,399 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background:
+    linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0.92)),
+    url("background.jpeg");
+  background-size: cover;
+  background-position: center;
+  color: white;
+  font-family: Arial, sans-serif;
+  overflow: hidden;
+}
+
+.app {
+  height: 100vh;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.topbar {
+  height: 95px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(0,0,0,0.76);
+  border: 1px solid rgba(255,0,0,0.4);
+  border-radius: 22px;
+  padding: 14px 22px;
+  box-shadow: 0 0 35px rgba(255,0,0,0.3);
+}
+
+h1 {
+  margin: 0;
+  font-size: 46px;
+  color: #e00000;
+  letter-spacing: 4px;
+  text-shadow: 0 0 20px red;
+}
+
+.topbar p {
+  margin: 4px 0 0;
+  color: #ccc;
+}
+
+.stats {
+  display: flex;
+  gap: 12px;
+}
+
+.stats div {
+  min-width: 130px;
+  background: rgba(20,0,0,0.9);
+  border: 1px solid #5a0000;
+  border-radius: 16px;
+  padding: 12px;
+  font-weight: 800;
+}
+
+.stats span {
+  display: block;
+  margin-top: 4px;
+  color: #ff2020;
+  font-size: 24px;
+}
+
+.danger-bar {
+  height: 16px;
+  background: #080808;
+  border: 1px solid #660000;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+#dangerFill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #320000, #ff0000, #fff);
+  box-shadow: 0 0 25px red;
+}
+
+.scene {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  border-radius: 28px;
+  overflow: hidden;
+  border: 2px solid rgba(255,0,0,0.35);
+  background: radial-gradient(circle at center, rgba(80,0,0,0.18), #000 70%);
+  box-shadow:
+    inset 0 0 120px black,
+    0 0 50px rgba(255,0,0,0.35);
+}
+
+.scene::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("monstres.jpeg");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: 0.35;
+  filter: grayscale(100%) contrast(2.2) brightness(0.7);
+  z-index: 1;
+}
+
+.scene::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at center, transparent 20%, rgba(0,0,0,0.9) 78%),
+    linear-gradient(rgba(255,0,0,0.08), transparent);
+  z-index: 2;
+}
+
+.scene.danger {
+  animation: shake 0.08s infinite;
+}
+
+@keyframes shake {
+  0% { transform: translate(0); }
+  25% { transform: translate(4px, -4px); }
+  50% { transform: translate(-4px, 4px); }
+  75% { transform: translate(4px, 4px); }
+  100% { transform: translate(0); }
+}
+
+.girl-photo {
+  position: absolute;
+  left: 50%;
+  top: 52%;
+  width: 280px;
+  height: 350px;
+  transform: translate(-50%, -50%);
+  background-image: url("girl-face.jpeg");
+  background-size: cover;
+  background-position: center;
+  border-radius: 50%;
+  z-index: 8;
+  filter: grayscale(100%) contrast(2) brightness(0.82);
+  box-shadow:
+    0 0 80px rgba(255,255,255,0.16),
+    0 0 130px rgba(255,0,0,0.4);
+}
+
+.girl-photo::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle, transparent 25%, rgba(0,0,0,0.92) 86%);
+  border-radius: inherit;
+}
+
+.monster {
+  position: absolute;
+  width: 230px;
+  height: 230px;
+  background-image: url("monstres.jpeg");
+  background-size: cover;
+  background-position: center;
+  border-radius: 18px;
+  z-index: 5;
+  filter: grayscale(100%) contrast(2.3) brightness(0.8);
+  box-shadow: 0 0 70px rgba(255,255,255,0.22);
+  opacity: 0.9;
+  transition: transform 0.12s linear, opacity 0.2s;
+  clip-path: circle(48% at 50% 50%);
+  animation: creepyFloat 1.4s infinite alternate;
+}
+
+.monster::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle, transparent 35%, black 82%);
+  border-radius: inherit;
+}
+
+@keyframes creepyFloat {
+  from { filter: grayscale(100%) contrast(2.2) brightness(0.65); }
+  to { filter: grayscale(100%) contrast(3) brightness(1); }
+}
+
+.monster1 { top: 5%; left: 5%; }
+.monster2 { top: 8%; right: 8%; }
+.monster3 { bottom: 8%; left: 10%; }
+.monster4 { bottom: 8%; right: 10%; }
+.monster5 { top: 42%; left: 2%; }
+.monster6 { top: 42%; right: 2%; }
+
+.rage {
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  left: 50%;
+  top: 52%;
+  transform: translate(-50%, -50%) scale(0);
+  border: 5px solid red;
+  border-radius: 50%;
+  opacity: 0;
+  z-index: 10;
+}
+
+.rage.active {
+  animation: rage 0.5s ease-out;
+}
+
+@keyframes rage {
+  from {
+    transform: translate(-50%, -50%) scale(0.2);
+    opacity: 1;
+  }
+  to {
+    transform: translate(-50%, -50%) scale(11);
+    opacity: 0;
+  }
+}
+
+.barrier {
+  position: absolute;
+  inset: 55px 160px;
+  border: 4px solid #b00000;
+  border-radius: 50%;
+  box-shadow:
+    0 0 50px red,
+    inset 0 0 45px rgba(255,0,0,0.45);
+  z-index: 7;
+  animation: pulse 0.7s infinite alternate;
+}
+
+@keyframes pulse {
+  from { opacity: 0.35; transform: scale(0.94); }
+  to { opacity: 1; transform: scale(1.04); }
+}
+
+.bottom-ui {
+  height: 110px;
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 12px;
+}
+
+.protect-btn {
+  border: none;
+  border-radius: 22px;
+  background: linear-gradient(135deg, #700000, #ff0000);
+  color: white;
+  font-size: 24px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 0 35px red;
+}
+
+.protect-btn:active {
+  transform: scale(0.96);
+}
+
+.shop {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.shop button {
+  border-radius: 20px;
+  border: 1px solid #700000;
+  background: rgba(0,0,0,0.82);
+  color: white;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: inset 0 0 18px rgba(255,0,0,0.18);
+}
+
+.shop button span {
+  display: block;
+  color: #ff2525;
+  font-size: 22px;
+  margin-top: 6px;
+}
+
+.shop button:hover {
+  background: #2a0000;
+}
+
+#message {
+  margin: 0;
+  height: 28px;
+  text-align: center;
+  color: #ff3333;
+  font-size: 22px;
+  font-weight: 900;
+  text-shadow: 0 0 15px red;
+}
+
+.big-message {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  background: rgba(0,0,0,0.86);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.big-message h2 {
+  margin: 0;
+  font-size: 95px;
+  color: red;
+  letter-spacing: 10px;
+  text-shadow: 0 0 25px red, 0 0 80px red;
+}
+
+.big-message p {
+  font-size: 30px;
+  font-weight: 900;
+}
+
+.big-message button {
+  margin-top: 20px;
+  padding: 18px 40px;
+  border: none;
+  border-radius: 18px;
+  background: red;
+  color: white;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.start-screen {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle, rgba(80,0,0,0.35), black 70%);
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.start-screen h2 {
+  font-size: 80px;
+  color: red;
+  text-shadow: 0 0 30px red;
+  letter-spacing: 8px;
+}
+
+.start-screen p {
+  font-size: 28px;
+  font-weight: 900;
+}
+
+#countdown {
+  font-size: 120px;
+  color: white;
+  text-shadow: 0 0 30px red;
+  margin: 20px;
+}
+
+#startBtn {
+  padding: 20px 50px;
+  border: none;
+  border-radius: 18px;
+  background: red;
+  color: white;
+  font-size: 22px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.scene.attack-wave {
+  animation: attackShake 0.05s infinite;
+  box-shadow:
+    inset 0 0 180px black,
+    0 0 120px red;
+}
+
+.scene.attack-wave::after {
+  background:
+    radial-gradient(circle at center, rgba(255,0,0,0.25), rgba(0,0,0,0.95) 75%);
+}
+
+@keyframes attackShake {
+  0% { transform: translate(0) scale(1); }
+  25% { transform: translate(8px, -8px) scale(1.01); }
+  50% { transform: translate(-8px, 8px) scale(1.02); }
+  75% { transform: translate(8px, 8px) scale(1.01); }
+  100% { transform: translate(0) scale(1); }
+}
+
+.hidden {
+  display: none;
+}
