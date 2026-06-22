@@ -123,12 +123,11 @@ if (goToReadyBtn) {
     if (prestigeGuideBox) prestigeGuideBox.classList.add("hidden");
     if (readyBox) readyBox.classList.remove("hidden");
     if (readySound) { try { readySound.play().catch(() => {}); } catch(err){} }
+    start_countdownText()
   });
 }
 
-if (startBtn) {
-  startBtn.addEventListener("click", function(e) {
-    if (e) e.preventDefault();
+function start_countdownText(){
     if (clickSound) { try { clickSound.currentTime = 0; clickSound.play().catch(() => {}); } catch(err){} }
     startBtn.classList.add("hidden");
     
@@ -147,7 +146,7 @@ if (startBtn) {
         initGame();
       }
     }, 1000);
-  });
+  
 }
 
 // --- BOUCLE PRINCIPALE DE JEU ---
